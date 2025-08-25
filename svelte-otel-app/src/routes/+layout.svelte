@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Header from './Header.svelte';
 	import '../app.css';
+	import { initializeTracing } from  '$lib/tracing.js';
+	initializeTracing();
 	let { children } = $props();
 </script>
 

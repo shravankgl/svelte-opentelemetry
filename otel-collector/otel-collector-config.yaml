@@ -1,0 +1,47 @@
+receivers:
+  # OTLP receiver for traces from the Svelte application
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        cors:
+          allowed_origins: "*"
+          allowed_headers: "*"
+
+processors:
+  # Resource processor to add additional resource attributes
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: "development"
+        action: insert
+      - key: service.instance.id
+        value: "svelte-tutorial-1"
+        action: insert
+
+exporters:
+  # OTLP exporter to send traces to SigNoz
+  otlp:
+    endpoint: "http://<signoz-oltp-endpoint>:4317" # SigNoz OTLP endpoint
+    tls:
+      insecure: true
+    headers:
+      #"signoz-access-token": "<signoz-access-token>"
+  # Debug exporter for debugging (replaces deprecated logging exporter)
+  debug:
+    verbosity: detailed
+
+  # File exporter for local debugging (optional)
+  file:
+    path: ./traces.json
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [resource]
+      exporters: [otlp, debug]
+  
+  extensions: []
