@@ -25,11 +25,10 @@ export function initializeTracing() {
 
     // Direct OTLP exporter to SigNoz
     const exporter = new OTLPTraceExporter({
-      url: 'http://<oltp-collector-endpoint>:4318/v1/traces', // OTLP HTTP endpoint
-      headers: {}
-      // headers: {
-      //   'signoz-access-token': '<signoz-access-token>', // Required when sending directly to signoz
-      // },
+      url: 'http://<signoz-endpoint>:4318/v1/traces', // OTLP HTTP endpoint
+      headers: {
+         'signoz-access-token': '<signoz-access-token>', // Required when sending directly to signoz
+       },
     });
 
     const simpleSpanProcessor = new SimpleSpanProcessor(exporter);
