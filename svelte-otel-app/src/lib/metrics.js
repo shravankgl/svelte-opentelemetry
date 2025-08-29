@@ -3,6 +3,7 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import { onCLS, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
+import { browser } from '$app/environment';
 import { 
   ATTR_SERVICE_NAME, 
   ATTR_SERVICE_VERSION 
@@ -13,6 +14,10 @@ let meterProvider = null;
 let webVitalsMeter = null;
 
 export function initializeMetrics() {
+// if (!browser) {
+//     console.log('Skipping metrics initialization on server');
+//     return;
+//   }
   console.log('Initializing OpenTelemetry Metrics...');
 
   try {
@@ -58,7 +63,7 @@ export function initializeMetrics() {
 }
 
 function setupWebVitals() {
-  if (!webVitalsMeter) {
+  if (!webVitalsMeter || !browser) {
     console.warn('Web vitals meter not initialized');
     return;
   }
@@ -162,6 +167,7 @@ function setupCustomMetrics() {
     unit: '1',
   });
 
+  if(browser){
   // Track page views
   pageViewCounter.add(1, {
     'page.route': window.location.pathname,
@@ -200,6 +206,7 @@ function setupCustomMetrics() {
       'page.route': window.location.pathname
     });
   });
+}
 }
 
 // Helper function to determine metric rating (good/needs improvement/poor)
