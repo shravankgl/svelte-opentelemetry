@@ -2,7 +2,10 @@
 	import Header from './Header.svelte';
 	import '../app.css';
 	import { initializeTracing } from  '$lib/tracing.js';
+	import { initializeMetrics } from '$lib/metrics.js';
 	initializeTracing();
+	initializeMetrics();
+
 	let { children } = $props();
 </script>
 

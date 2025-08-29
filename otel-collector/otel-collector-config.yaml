@@ -66,7 +66,6 @@ exporters:
       insecure: true
     headers:
       #"signoz-access-token": "<signoz-access-token>"
-  # Debug exporter for debugging (replaces deprecated logging exporter)
   debug:
     verbosity: detailed
 
@@ -76,9 +75,15 @@ exporters:
 
 service:
   pipelines:
+
     traces:
       receivers: [otlp]
       processors: [resource, filter, batch]
+      exporters: [otlp]
+
+    metrics:
+      receivers: [otlp]
+      processors: [resource]
       exporters: [otlp]
   
   extensions: []

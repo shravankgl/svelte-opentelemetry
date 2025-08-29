@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useSverdleMetrics } from '$lib/sverdle-metrics';
 	import { enhance } from '$app/forms';
 	import { confetti } from '@neoconfetti/svelte';
 	import type { ActionData, PageData } from './$types';
@@ -24,6 +25,31 @@
 
 	/** Whether the current guess can be submitted */
 	let submittable = $derived(currentGuess.length === 5);
+
+	// Initialize metrics
+	const { recordGameStart, recordGuess, recordGameEnd } = useSverdleMetrics();
+
+	// Track game state for metrics
+	let lastAnswerLength = 0;
+	$effect(() => {
+		// Record game start when first loading a new game
+		if (data.answers.length === 0 && lastAnswerLength > 0) {
+			recordGameStart();
+		}
+		
+		// Check for game end
+		if (data.answers.length > 0) {
+			const gameWon = won;
+			const gameLost = data.answers.length >= 6 && !gameWon;
+			
+			if (gameWon || gameLost) {
+				recordGameEnd(gameWon, data.answers.length);
+			}
+		}
+		
+		lastAnswerLength = data.answers.length;
+	});
+
 
 	const { classnames, description } = $derived.by(() => {
 		/**
@@ -78,6 +104,11 @@
 		if (event.metaKey) return;
 
 		if (event.key === 'Enter' && !submittable) return;
+
+		// Record guess when Enter is pressed
+		if (event.key === 'Enter' && submittable) {
+			recordGuess(currentGuess, i + 1);
+		}
 
 		document
 			.querySelector(`[data-key="${event.key}" i]`)
@@ -144,7 +175,7 @@
 			{#if !won && data.answer}
 				<p>the answer was "{data.answer}"</p>
 			{/if}
-			<button data-key="enter" class="restart selected" formaction="?/restart">
+			<button data-key="enter" class="restart selected" formaction="?/restart" onclick={recordGameStart}>
 				{won ? 'you won :)' : `game over :(`} play again?
 			</button>
 		{:else}
