@@ -5,6 +5,9 @@
 	import type { ActionData, PageData } from './$types';
 	import { MediaQuery } from 'svelte/reactivity';
 
+	import { onMount } from 'svelte';
+
+
 	interface Props {
 		data: PageData;
 		form: ActionData;
@@ -29,14 +32,14 @@
 	// Initialize metrics
 	const { recordGameStart, recordGuess, recordGameEnd } = useSverdleMetrics();
 
+	// Track game start on component mount
+	onMount(() => {
+    	recordGameStart();
+	});
 	// Track game state for metrics
 	let lastAnswerLength = 0;
+	
 	$effect(() => {
-		// Record game start when first loading a new game
-		if (data.answers.length === 0 && lastAnswerLength > 0) {
-			recordGameStart();
-		}
-		
 		// Check for game end
 		if (data.answers.length > 0) {
 			const gameWon = won;
