@@ -61,7 +61,7 @@ processors:
 exporters:
   # OTLP exporter to send traces to SigNoz
   otlp:
-    endpoint: "http://192.168.0.110:4317" # SigNoz OTLP endpoint
+    endpoint: "http://192.168.1.142:4317" # SigNoz OTLP endpoint
     tls:
       insecure: true
     headers:
@@ -85,5 +85,10 @@ service:
       receivers: [otlp]
       processors: [resource]
       exporters: [otlp]
-  
+
+    logs:
+      receivers: [otlp]
+      processors: [resource]
+      exporters: [debug]
+
   extensions: []

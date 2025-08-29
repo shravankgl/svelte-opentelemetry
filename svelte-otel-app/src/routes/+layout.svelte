@@ -3,16 +3,36 @@
 	import '../app.css';
 	import { initializeTracing } from  '$lib/tracing.js';
 	import { initializeMetrics } from '$lib/metrics.js';
+	import { initializeLogging, getLogger } from '$lib/logging.js';
 	initializeTracing();
 	initializeMetrics();
+	initializeLogging();
 
 	let { children } = $props();
+
+	function logButtonClick() {
+		const logger = getLogger();
+		if (logger) {
+			logger.emit({
+				body: 'Custom button clicked!',
+				severityNumber: 9, // INFO
+				severityText: 'INFO',
+				attributes: {
+					'custom.event': 'button_click',
+					'page.route': window.location.pathname
+				}
+			});
+			// Optionally, show feedback
+			alert('Custom log sent!');
+		}
+	}
 </script>
 
 <div class="app">
 	<Header />
 
 	<main>
+		<button on:click={logButtonClick} style="margin-bottom: 1rem;">Log Custom Event</button>
 		{@render children()}
 	</main>
 
