@@ -76,3 +76,7 @@ traces.json
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+otel-collector/README.md
+otel-collector/otelcol-contrib
+otel-collector/otelcol-contrib_0.132.0_linux_amd64.tar.gz

@@ -20,11 +20,48 @@ processors:
       - key: service.instance.id
         value: "svelte-tutorial-1"
         action: insert
+  
+  # Batch processor for better performance
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+  
+  # Filter processor to exclude health check and static asset traces
+  filter:
+    traces:
+      span:
+        # Filter out /health webpage
+        - 'attributes["http.route"] == "/health"'
+        - 'attributes["http.target"] == "/health"'
+        - 'attributes["url.path"] == "/health"'
+        - 'name == "GET /health"'
+        
+        # Filter out /api/health endpoint
+        - 'attributes["http.route"] == "/api/health"'
+        - 'attributes["http.target"] == "/api/health"'
+        - 'attributes["url.path"] == "/api/health"'
+        - 'name == "GET /api/health"'
+        
+        # Filter out /api/v*/health pattern (using regex)
+        - 'attributes["http.route"] != nil and IsMatch(attributes["http.route"], "^/api/v[^/]+/health$")'
+        - 'attributes["http.target"] != nil and IsMatch(attributes["http.target"], "^/api/v[^/]+/health$")'
+        - 'attributes["url.path"] != nil and IsMatch(attributes["url.path"], "^/api/v[^/]+/health$")'
+        - 'name != nil and IsMatch(name, "^GET /api/v[^/]+/health$")'
+        
+        # Filter out favicon
+        - 'name == "GET /favicon.ico"'
+        - 'attributes["http.target"] == "/favicon.ico"'
+        
+        # Filter out static assets
+        - 'attributes["http.url"] != nil and IsMatch(attributes["http.url"], ".*\\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$")'
+        - 'attributes["http.target"] != nil and IsMatch(attributes["http.target"], ".*\\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$")'
+
 
 exporters:
   # OTLP exporter to send traces to SigNoz
   otlp:
-    endpoint: "http://<signoz-oltp-endpoint>:4317" # SigNoz OTLP endpoint
+    endpoint: "http://192.168.0.110:4317" # SigNoz OTLP endpoint
     tls:
       insecure: true
     headers:
@@ -41,7 +78,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [resource]
-      exporters: [otlp, debug]
+      processors: [resource, filter, batch]
+      exporters: [otlp]
   
   extensions: []

@@ -1,12 +1,12 @@
 import { WebTracerProvider } from "@opentelemetry/sdk-trace-web";
 import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
-import { ConsoleSpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
+import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-web';
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { registerInstrumentations } from "@opentelemetry/instrumentation";
-import { FetchInstrumentation } from "@opentelemetry/instrumentation-fetch";
 import { 
   ATTR_SERVICE_NAME, 
-  ATTR_SERVICE_VERSION,   
+  ATTR_SERVICE_VERSION,
 } from '@opentelemetry/semantic-conventions';
 
 // Initialize the OpenTelemetry tracer provider
@@ -25,23 +25,43 @@ export function initializeTracing() {
 
     // Direct OTLP exporter to SigNoz
     const exporter = new OTLPTraceExporter({
-      url: 'http://<oltp-collector-endpoint>:4318/v1/traces', // OTLP HTTP endpoint
+      url: 'http://localhost:4318/v1/traces', // OTLP HTTP endpoint
       headers: {}
     });
 
-    const simpleSpanProcessor = new SimpleSpanProcessor(exporter);
-    const consoleSpanProcessor = new SimpleSpanProcessor(new ConsoleSpanExporter());
+    const batchSpanProcessor = new BatchSpanProcessor(exporter);
 
     const provider = new WebTracerProvider({
         resource: resource,
-        spanProcessors: [simpleSpanProcessor, consoleSpanProcessor],
+        spanProcessors: [batchSpanProcessor],
     });
 
     provider.register();
 
     registerInstrumentations({
     instrumentations: [
-        new FetchInstrumentation(),
+        getWebAutoInstrumentations({
+          // Configure specific instrumentations
+          '@opentelemetry/instrumentation-fetch': {
+            // Instrument fetch API calls
+            propagateTraceHeaderCorsUrls: [
+              /.+/g, // Allow all URLs for demo purposes
+            ],
+          },
+          '@opentelemetry/instrumentation-xml-http-request': {
+            // Instrument XMLHttpRequest calls
+            propagateTraceHeaderCorsUrls: [
+              /.+/g, // Allow all URLs for demo purposes
+            ],
+          },
+          '@opentelemetry/instrumentation-user-interaction': {
+            // Instrument user interactions (clicks, etc.)
+            eventNames: ['click', 'submit', 'keydown'],
+          },
+          '@opentelemetry/instrumentation-document-load': {
+            enabled: true,
+          },
+        }),
     ],
     });
 
