@@ -1,0 +1,16 @@
+{
+  "name": "simulator",
+  "version": "1.0.0",
+  "description": "1. Install dependencies: ``` npm init -y npm install playwright commander npx playwright install chromium ``` 2. Save the script as webvitals-simulator.js and make it executable: ``` bashchmod +x webvitals-simulator.js ``` 3. Usage examples: ``` # Basic 5-minute simulation node webvitals-simulator.js",
+  "main": "webvitals-simulator.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "playwright": "^1.55.0"
+  }
+}
