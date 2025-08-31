@@ -32,7 +32,7 @@
 	<Header />
 
 	<main>
-		<button on:click={logButtonClick} style="margin-bottom: 1rem;">Log Custom Event</button>
+		<button onclick={logButtonClick} style="margin-bottom: 1rem;">Log Custom Event</button>
 		{@render children()}
 	</main>
 
